@@ -1,4 +1,5 @@
 import { Socket } from "socket.io"
+import { RoomManager } from "./roomManager"
 
 export interface User {
     name : string
@@ -8,10 +9,11 @@ export interface User {
 export class UserManager { 
     private users : User[]
     private queue : string[]
+    private roomManger : RoomManager
     constructor() {
         this.users = []
         this.queue = []
-
+        this.roomManger = new RoomManager()
     }
 
     addUser(name:string,socket : Socket){
@@ -48,11 +50,17 @@ export class UserManager {
         }
 
         console.log("createing Room.")
+        const room = this.roomManger.createRoom(user1,user2)
+        this.clearQueue
     }
 
     initHandler(socket : Socket){
-        socket.on("offer",(res)=>{
-            console.log(res)
+        socket.on("offer",({sdp,roomId})=>{
+            this.roomManger.onOffer(roomId,sdp)
+        })
+
+        socket.on("answer",({sdp,roomId})=>{
+            this.roomManger.onAnswer(roomId,sdp)
         })
     }
 
